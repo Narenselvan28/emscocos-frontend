@@ -26,9 +26,8 @@ export default function WithGSTComp({
   addRow,
 }) {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">With GST Entries</h2>
-      <table className="min-w-full border border-gray-300 mb-4">
+    <div className="h-80 bg-white ">
+      <table className="min-w-full border  border-gray-300 mb-4">
         <thead>
           <tr className="bg-gray-200">
             <th className="border p-2">Item Name</th>

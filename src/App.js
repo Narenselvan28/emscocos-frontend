@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import GstComp from "./purchase components/gstcomp";
 import SearchableDropdown from "./purchase components/searchabledd";
+import SundryDetails from "./purchase components/sundry.jsx";
 
 const orderTypeOptions = ["Purchase", "Sale"];
 const partyOptions = ["Ems cocos", "APA Rasu", "Anand SOK"];
@@ -11,12 +12,16 @@ const debitCreditOptions = ["-", "Debit", "Credit"];
 const sundryCategoryOptions = ["-", "Gunny Bags", "Loading Charges", "Roundoff (+)", "Roundoff (-)"];
 
 function ExcelEntryForm() {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
+
   const [orderType, setOrderType] = useState("");
   const [partyName, setPartyName] = useState("");
   const [brokerName, setBrokerName] = useState("");
   const [tableRows, setTableRows] = useState([]);
-  const [useGst, setUseGst] = useState(false); // ✅ Missing useGst added
+  const [useGst, setUseGst] = useState(false);
 
   const [showSundry, setShowSundry] = useState(false);
   const [sundryCategory, setSundryCategory] = useState("");
@@ -38,16 +43,19 @@ function ExcelEntryForm() {
   };
 
   const resetForm = () => {
-    setDate("");
+    setDate(() => {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    });
     setOrderType("");
     setPartyName("");
     setBrokerName("");
     setTableRows([{ itemName: "", uom: "", qty: "", price: "", debitCredit: "" }]);
+    setUseGst(false);
     setShowSundry(false);
     setSundryCategory("");
     setSundryValue("");
     setSundryRemarks("");
-    setUseGst(false);
   };
 
   const handleSave = () => {
@@ -57,9 +65,16 @@ function ExcelEntryForm() {
       partyName,
       brokerName,
       items: tableRows,
-      sundryDetails: showSundry ? { sundryCategory, sundryValue, sundryRemarks } : null,
-      gstEnabled: useGst
+      gstEnabled: useGst,
+      sundryDetails: showSundry
+        ? {
+          sundryCategory,
+          sundryValue,
+          sundryRemarks,
+        }
+        : null,
     };
+
     console.log("Form Data:", formData);
     alert("Data saved! Check console for output.");
   };
@@ -69,6 +84,7 @@ function ExcelEntryForm() {
       <div className="max-w-full">
         <h1 className="text-3xl font-semibold mb-8">Purchase / Sales</h1>
 
+        {/* Basic Details */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-white p-6 rounded shadow-md">
           <div>
             <label className="block mb-2 font-semibold">Date</label>
@@ -79,36 +95,30 @@ function ExcelEntryForm() {
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
-          <div>
-            <SearchableDropdown
-              label="Order Type"
-              options={orderTypeOptions}
-              value={orderType}
-              onChange={setOrderType}
-              placeholder="Select or type order type"
-            />
-          </div>
-          <div>
-            <SearchableDropdown
-              label="Party Name"
-              options={partyOptions}
-              value={partyName}
-              onChange={setPartyName}
-              placeholder="Select or type party name"
-            />
-          </div>
-          <div>
-            <SearchableDropdown
-              label="Broker Name"
-              options={brokerOptions}
-              value={brokerName}
-              onChange={setBrokerName}
-              placeholder="Select or type broker name"
-            />
-          </div>
+          <SearchableDropdown
+            label="Order Type"
+            options={orderTypeOptions}
+            value={orderType}
+            onChange={setOrderType}
+            placeholder="Select or type order type"
+          />
+          <SearchableDropdown
+            label="Party Name"
+            options={partyOptions}
+            value={partyName}
+            onChange={setPartyName}
+            placeholder="Select or type party name"
+          />
+          <SearchableDropdown
+            label="Broker Name"
+            options={brokerOptions}
+            value={brokerName}
+            onChange={setBrokerName}
+            placeholder="Select or type broker name"
+          />
         </div>
 
-        {/* ✅ GST Toggle */}
+        {/* GST Toggle */}
         <div className="mb-6">
           <label className="inline-flex items-center space-x-2">
             <input
@@ -121,6 +131,7 @@ function ExcelEntryForm() {
           </label>
         </div>
 
+        {/* Main Table */}
         <div className="mb-8">
           {useGst ? (
             <GstComp
@@ -132,10 +143,10 @@ function ExcelEntryForm() {
               addRow={addRow}
             />
           ) : (
-            <div className="overflow-x-auto h-80 border-solid">
-              <table className="table-auto border-collapse w-full bg-white text-base">
+            <div className="overflow-x-auto h-80 border rounded shadow-sm bg-white">
+              <table className="table-auto border-collapse w-full text-base">
                 <thead className="bg-gray-200">
-                  <tr className="text-left">
+                  <tr>
                     <th className="border px-4 py-3">Item Name</th>
                     <th className="border px-4 py-3">UOM</th>
                     <th className="border px-4 py-3">Qty</th>
@@ -152,7 +163,7 @@ function ExcelEntryForm() {
                           options={itemNameOptions}
                           value={row.itemName}
                           onChange={(val) => updateRow(index, "itemName", val)}
-                          placeholder="Select or type item name"
+                          placeholder="Item name"
                         />
                       </td>
                       <td className="border px-4 py-2 w-24">
@@ -161,7 +172,7 @@ function ExcelEntryForm() {
                           options={uomOptions}
                           value={row.uom}
                           onChange={(val) => updateRow(index, "uom", val)}
-                          placeholder="Select or type UOM"
+                          placeholder="UOM"
                         />
                       </td>
                       <td className="border px-4 py-2 w-24">
@@ -198,7 +209,12 @@ function ExcelEntryForm() {
             </div>
           )}
         </div>
+<div>
+    
 
+</div>
+
+        {/* Buttons */}
         <div className="mt-8 flex flex-wrap gap-4">
           <button
             className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
@@ -216,10 +232,12 @@ function ExcelEntryForm() {
             className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
             onClick={handleSave}
           >
-            Save
+            Save Sheets
           </button>
         </div>
       </div>
+           <SundryDetails/>
+
     </div>
   );
 }
